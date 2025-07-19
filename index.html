@@ -75,96 +75,106 @@
                 gap: 0 !important;
             }
         }
+        .left-section {
+            height: calc(100vh - 200px); /* Adjust based on header and padding */
+            overflow-y: auto;
+        }
+        .right-section {
+            position: relative;
+            min-height: calc(100vh - 200px); /* Match left section height */
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
     <div class="container mx-auto p-6 w-full">
-        <h1 class="text-4xl font-bold text-white py-4 shadow-lg gradient-bg pl-6 mb-6">Crypto Calculator</h1>
+        <h1 class="text-4xl font-bold text-white py-4 shadow-lg gradient-bg pl-6 mb-6 sticky top-0 z-20 w-full">Crypto Calculator</h1>
         
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 grid-container">
             <div class="col-span-1 flex flex-col">
-                <details class="bg-white bg-opacity-90 shadow-xl border border-gray-200 mb-8" open>
-                    <summary class="text-2xl font-semibold text-gray-800 p-6 cursor-pointer select-none">Enter Trade Parameters</summary>
-                    <div class="p-6">
-                        <div>
-                            <button id="calculateBtnTop" class="mt-2 w-full gradient-button text-white p-3 rounded-lg font-semibold text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6">Calculate</button>
+                <div class="left-section">
+                    <details class="bg-white bg-opacity-90 shadow-xl border border-gray-200 mb-8" open>
+                        <summary class="text-2xl font-semibold text-gray-800 p-6 cursor-pointer select-none">Enter Trade Parameters</summary>
+                        <div class="p-6">
+                            <div>
+                                <button id="calculateBtnTop" class="mt-2 w-full gradient-button text-white p-3 rounded-lg font-semibold text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6">Calculate</button>
+                            </div>
+                            <div class="space-y-6">
+                                <div>
+                                    <label for="cryptoSelect" class="block text-sm font-medium text-gray-700 mb-2">Select Crypto:</label>
+                                    <select id="cryptoSelect" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                                        <option value="USDT">USDT</option>
+                                        <option value="BTC">BTC</option>
+                                        <option value="ETH">ETH</option>
+                                        <option value="SOL">SOL</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="entryPrice" class="block text-sm font-medium text-gray-700 mb-2">Entry Price ($)</label>
+                                    <input type="number" id="entryPrice" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="110000" placeholder="e.g., 50000">
+                                    <p class="text-xs text-gray-500 mt-1">The price at which you enter the trade.</p>
+                                </div>
+                                <div>
+                                    <label for="margin" id="marginLabel" class="block text-sm font-medium text-gray-700 mb-2">Margin (USDT)</label>
+                                    <input type="number" id="margin" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="2000" placeholder="e.g., 1000">
+                                    <p class="text-xs text-gray-500 mt-1">The amount of capital you put into the trade.</p>
+                                </div>
+                                <div>
+                                    <label for="riskReward" class="block text-sm font-medium text-gray-700 mb-2">Risk-Reward Ratio</label>
+                                    <input type="number" id="riskReward" step="0.1" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="3" placeholder="e.g., 2">
+                                    <p class="text-xs text-gray-500 mt-1">Ratio of potential profit to potential loss (e.g., 2 for 2:1).</p>
+                                </div>
+                                <div>
+                                    <label for="tradeType" class="block text-sm font-medium text-gray-700 mb-2">Trade Type</label>
+                                    <select id="tradeType" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                                        <option value="long">Long</option>
+                                        <option value="short">Short</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Select whether the trade is long or short.</p>
+                                </div>
+                                <div>
+                                    <label for="resultType" class="block text-sm font-medium text-gray-700 mb-2">Trade Outcome</label>
+                                    <select id="resultType" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                                        <option value="profit">Take Profit</option>
+                                        <option value="loss">Stop Loss</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Select whether to calculate profit or loss.</p>
+                                </div>
+                                <div>
+                                    <label for="lossPercentage" class="block text-sm font-medium text-gray-700 mb-2">Acceptable Loss (%)</label>
+                                    <select id="lossPercentage" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                                        <option value="10">10%</option>
+                                        <option value="15">15%</option>
+                                        <option value="20">20%</option>
+                                        <option value="25">25%</option>
+                                    </select>
+                                    <p class="text-xs text-gray-500 mt-1">Select the maximum acceptable loss percentage.</p>
+                                </div>
+                                <div>
+                                    <label for="takeProfit" class="block text-sm font-medium text-gray-700 mb-2">Take Profit ($)</label>
+                                    <input type="number" id="takeProfit" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" placeholder="Calculated or edit">
+                                    <p class="text-xs text-gray-500 mt-1">Take Profit price (editable, defaults to Risk:Reward ratio).</p>
+                                </div>
+                                <div>
+                                    <label for="stopLoss" class="block text-sm font-medium text-gray-700 mb-2">Stop Loss ($)</label>
+                                    <input type="number" id="stopLoss" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" placeholder="Calculated or edit">
+                                    <p class="text-xs text-gray-500 mt-1">Stop Loss price (editable, defaults to acceptable loss).</p>
+                                </div>
+                                <div>
+                                    <label for="usdToInrRate" class="block text-sm font-medium text-gray-700 mb-2">USD to INR Rate</label>
+                                    <input type="number" id="usdToInrRate" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="83.5" placeholder="e.g., 83.5">
+                                    <p class="text-xs text-gray-500 mt-1">Conversion rate from USD to INR (editable).</p>
+                                </div>
+                                <div>
+                                    <button id="calculateBtn" class="mt-6 w-full gradient-button text-white p-3 rounded-lg font-semibold text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">Calculate</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="space-y-6">
-                            <div>
-                                <label for="cryptoSelect" class="block text-sm font-medium text-gray-700 mb-2">Select Crypto:</label>
-                                <select id="cryptoSelect" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
-                                    <option value="USDT">USDT</option>
-                                    <option value="BTC">BTC</option>
-                                    <option value="ETH">ETH</option>
-                                    <option value="SOL">SOL</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="entryPrice" class="block text-sm font-medium text-gray-700 mb-2">Entry Price ($)</label>
-                                <input type="number" id="entryPrice" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="110000" placeholder="e.g., 50000">
-                                <p class="text-xs text-gray-500 mt-1">The price at which you enter the trade.</p>
-                            </div>
-                            <div>
-                                <label for="margin" id="marginLabel" class="block text-sm font-medium text-gray-700 mb-2">Margin (USDT)</label>
-                                <input type="number" id="margin" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="2000" placeholder="e.g., 1000">
-                                <p class="text-xs text-gray-500 mt-1">The amount of capital you put into the trade.</p>
-                            </div>
-                            <div>
-                                <label for="riskReward" class="block text-sm font-medium text-gray-700 mb-2">Risk-Reward Ratio</label>
-                                <input type="number" id="riskReward" step="0.1" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="3" placeholder="e.g., 2">
-                                <p class="text-xs text-gray-500 mt-1">Ratio of potential profit to potential loss (e.g., 2 for 2:1).</p>
-                            </div>
-                            <div>
-                                <label for="tradeType" class="block text-sm font-medium text-gray-700 mb-2">Trade Type</label>
-                                <select id="tradeType" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
-                                    <option value="long">Long</option>
-                                    <option value="short">Short</option>
-                                </select>
-                                <p class="text-xs text-gray-500 mt-1">Select whether the trade is long or short.</p>
-                            </div>
-                            <div>
-                                <label for="resultType" class="block text-sm font-medium text-gray-700 mb-2">Trade Outcome</label>
-                                <select id="resultType" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
-                                    <option value="profit">Take Profit</option>
-                                    <option value="loss">Stop Loss</option>
-                                </select>
-                                <p class="text-xs text-gray-500 mt-1">Select whether to calculate profit or loss.</p>
-                            </div>
-                            <div>
-                                <label for="lossPercentage" class="block text-sm font-medium text-gray-700 mb-2">Acceptable Loss (%)</label>
-                                <select id="lossPercentage" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
-                                    <option value="10">10%</option>
-                                    <option value="15">15%</option>
-                                    <option value="20">20%</option>
-                                    <option value="25">25%</option>
-                                </select>
-                                <p class="text-xs text-gray-500 mt-1">Select the maximum acceptable loss percentage.</p>
-                            </div>
-                            <div>
-                                <label for="takeProfit" class="block text-sm font-medium text-gray-700 mb-2">Take Profit ($)</label>
-                                <input type="number" id="takeProfit" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" placeholder="Calculated or edit">
-                                <p class="text-xs text-gray-500 mt-1">Take Profit price (editable, defaults to Risk:Reward ratio).</p>
-                            </div>
-                            <div>
-                                <label for="stopLoss" class="block text-sm font-medium text-gray-700 mb-2">Stop Loss ($)</label>
-                                <input type="number" id="stopLoss" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" placeholder="Calculated or edit">
-                                <p class="text-xs text-gray-500 mt-1">Stop Loss price (editable, defaults to acceptable loss).</p>
-                            </div>
-                            <div>
-                                <label for="usdToInrRate" class="block text-sm font-medium text-gray-700 mb-2">USD to INR Rate</label>
-                                <input type="number" id="usdToInrRate" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="83.5" placeholder="e.g., 83.5">
-                                <p class="text-xs text-gray-500 mt-1">Conversion rate from USD to INR (editable).</p>
-                            </div>
-                            <div>
-                                <button id="calculateBtn" class="mt-6 w-full gradient-button text-white p-3 rounded-lg font-semibold text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">Calculate</button>
-                            </div>
-                        </div>
-                    </div>
-                </details>
+                    </details>
+                </div>
             </div>
-            <div class="col-span-3 flex flex-col">
+            <div class="col-span-3 flex flex-col right-section">
                 <div id="selectedParams" class="bg-gray-100 p-4 rounded-lg mb-4 hidden"></div>
-                <div id="results" class="bg-white bg-opacity-90 p-6 shadow-xl border border-gray-200 hidden">
+                <div id="results" class="bg-white bg-opacity-90 p-6 shadow-xl border border-gray-200">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">Calculation Results</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-700" id="resultsTableContainer">
