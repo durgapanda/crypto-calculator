@@ -1,0 +1,382 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            /* font-size: ; */
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        }
+        .gradient-button {
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .gradient-button:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(90deg, #2a5298, #1e3c72);
+        }
+        .table-header {
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .table-row:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .table-row:hover {
+            background-color: #e5e7eb;
+        }
+        details[open] summary ~ * {
+            animation: sweep 0.5s ease-in-out;
+        }
+        @keyframes sweep {
+            0% {opacity: 0; transform: translateY(-10px);}
+            100% {opacity: 1; transform: translateY(0);}
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <div class="container mx-auto p-6 max-w-6xl">
+        <h1 class="text-4xl font-bold text-white py-4 shadow-lg gradient-bg pl-6">Crypto Calculator</h1>
+        
+        <!-- Input Form -->
+        <details class="bg-white bg-opacity-90 shadow-xl border border-gray-200 mb-8" open>
+            <summary class="text-2xl font-semibold text-gray-800 p-6 cursor-pointer select-none">Enter Trade Parameters</summary>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label for="cryptoSelect" class="block text-sm font-medium text-gray-700 mb-2">Select Crypto:</label>
+                        <select id="cryptoSelect" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                            <option value="USDT">USDT</option>
+                            <option value="BTC">BTC</option>
+                            <option value="ETH">ETH</option>
+                            <option value="SOL">SOL</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="entryPrice" class="block text-sm font-medium text-gray-700">Entry Price ($)</label>
+                        <input type="number" id="entryPrice" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="110000" placeholder="e.g., 50000">
+                        <p class="text-xs text-gray-500 mt-1">The price at which you enter the trade.</p>
+                    </div>
+                    <div>
+                        <label for="margin" id="marginLabel" class="block text-sm font-medium text-gray-700">Margin (USDT)</label>
+                        <input type="number" id="margin" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="2000" placeholder="e.g., 1000">
+                        <p class="text-xs text-gray-500 mt-1">The amount of capital you put into the trade.</p>
+                    </div>
+                    <div>
+                        <label for="riskReward" class="block text-sm font-medium text-gray-700">Risk-Reward Ratio</label>
+                        <input type="number" id="riskReward" step="0.1" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="3" placeholder="e.g., 2">
+                        <p class="text-xs text-gray-500 mt-1">Ratio of potential profit to potential loss (e.g., 2 for 2:1).</p>
+                    </div>
+                    <div>
+                        <label for="tradeType" class="block text-sm font-medium text-gray-700">Trade Type</label>
+                        <select id="tradeType" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                            <option value="long">Long</option>
+                            <option value="short">Short</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Select whether the trade is long or short.</p>
+                    </div>
+                    <div>
+                        <label for="resultType" class="block text-sm font-medium text-gray-700">Trade Outcome</label>
+                        <select id="resultType" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                            <option value="profit">Take Profit</option>
+                            <option value="loss">Stop Loss</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Select whether to calculate profit or loss.</p>
+                    </div>
+                    <div>
+                        <label for="lossPercentage" class="block text-sm font-medium text-gray-700">Acceptable Loss (%)</label>
+                        <select id="lossPercentage" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200">
+                            <option value="10">10%</option>
+                            <option value="15">15%</option>
+                            <option value="20">20%</option>
+                            <option value="25">25%</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Select the maximum acceptable loss percentage.</p>
+                    </div>
+                    <div>
+                        <label for="takeProfit" class="block text-sm font-medium text-gray-700">Take Profit ($)</label>
+                        <input type="number" id="takeProfit" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" placeholder="Calculated or edit">
+                        <p class="text-xs text-gray-500 mt-1">Take Profit price (editable, defaults to Risk:Reward ratio).</p>
+                    </div>
+                    <div>
+                        <label for="stopLoss" class="block text-sm font-medium text-gray-700">Stop Loss ($)</label>
+                        <input type="number" id="stopLoss" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" placeholder="Calculated or edit">
+                        <p class="text-xs text-gray-500 mt-1">Stop Loss price (editable, defaults to acceptable loss).</p>
+                    </div>
+                    <div>
+                        <label for="usdToInrRate" class="block text-sm font-medium text-gray-700">USD to INR Rate</label>
+                        <input type="number" id="usdToInrRate" step="0.01" min="0" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200" value="83.5" placeholder="e.g., 83.5">
+                        <p class="text-xs text-gray-500 mt-1">Conversion rate from USD to INR (editable).</p>
+                    </div>
+                </div>
+                <button id="calculateBtn" class="mt-6 w-full gradient-button text-white p-3 rounded-lg font-semibold text-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">Calculate</button>
+            </div>
+        </details>
+
+        <!-- Selected Parameters -->
+        <div id="selectedParams" class="bg-gray-100 p-4 rounded-lg mb-4 hidden"></div>
+
+        <!-- Results Table -->
+        <div id="results" class="bg-white bg-opacity-90 p-6 shadow-xl border border-gray-200 hidden">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Calculation Results</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-700" id="resultsTableContainer">
+                    <thead class="table-header" id="resultsThead">
+                        <tr>
+                            <th class="px-6 py-4">Leverage</th>
+                            <th class="px-6 py-4">Margin Price (<span id="marginHeader"></span>)</th>
+                            <th class="px-6 py-4">Position Size (<span id="positionHeader"></span>)</th>
+                            <th class="px-6 py-4">Liquidation Price ($)</th>
+                            <th class="px-6 py-4">Stop Loss ($)</th>
+                            <th class="px-6 py-4">Take Profit ($)</th>
+                            <th class="px-6 py-4" id="realizedHeader">Realized P/L (USDT)</th>
+                            <th class="px-6 py-4" id="usdHeader">Realized P/L (USD)</th>
+                            <th class="px-6 py-4">Tax Implied (₹)</th>
+                            <th class="px-6 py-4">Net Profit (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('cryptoSelect').addEventListener('change', updateHeaders);
+        document.getElementById('cryptoSelect').addEventListener('change', updateMarginLabel);
+        document.getElementById('cryptoSelect').addEventListener('change', updateTableHeader);
+        document.getElementById('calculateBtn').addEventListener('click', calculate);
+
+        function updateHeaders() {
+            const crypto = document.getElementById('cryptoSelect').value;
+            document.getElementById('marginHeader').textContent = crypto;
+            document.getElementById('positionHeader').textContent = crypto;
+            document.getElementById('realizedHeader').textContent = `Realized P/L (${crypto})`;
+            const entryPriceInput = document.getElementById('entryPrice');
+            if (crypto === 'ETH') {
+                entryPriceInput.value = '3000';
+            } else if (crypto === 'SOL') {
+                entryPriceInput.value = '150';
+            } else { // BTC or USDT
+                entryPriceInput.value = '110000';
+            }
+        }
+
+        function updateMarginLabel() {
+            const crypto = document.getElementById('cryptoSelect').value;
+            document.getElementById('marginLabel').textContent = `Margin (${crypto})`;
+            const marginInput = document.getElementById('margin');
+            if (crypto === 'BTC') {
+                marginInput.value = '0.02';
+            } else if (crypto === 'ETH') {
+                marginInput.value = '0.3';
+            } else if (crypto === 'SOL') {
+                marginInput.value = '3';
+            } else { // USDT
+                marginInput.value = '2000';
+            }
+        }
+
+        function updateTableHeader() {
+            const crypto = document.getElementById('cryptoSelect').value;
+            const usdHeader = document.getElementById('usdHeader');
+            if (crypto === 'USDT') {
+                usdHeader.style.display = 'none';
+            } else {
+                usdHeader.style.display = 'table-cell';
+            }
+        }
+
+        function formatNumber(value, crypto) {
+            if (crypto === 'USDT') {
+                return Math.round(value).toLocaleString('en-US');
+            } else {
+                return value.toLocaleString('en-US', { minimumFractionDigits: 8, maximumFractionDigits: 8 });
+            }
+        }
+
+        function calculate() {
+            const crypto = document.getElementById('cryptoSelect').value;
+            const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+            const margin = parseFloat(document.getElementById('margin').value);
+            const riskReward = parseFloat(document.getElementById('riskReward').value);
+            const tradeType = document.getElementById('tradeType').value;
+            const resultType = document.getElementById('resultType').value;
+            const lossPercentage = parseFloat(document.getElementById('lossPercentage').value);
+            const takeProfitInput = parseFloat(document.getElementById('takeProfit').value) || 0;
+            const stopLossInput = parseFloat(document.getElementById('stopLoss').value) || 0;
+            const usdToInrRate = parseFloat(document.getElementById('usdToInrRate').value) || 83.5;
+
+            if (isNaN(entryPrice) || isNaN(margin) || isNaN(riskReward) || isNaN(lossPercentage) || entryPrice <= 0 || margin <= 0 || riskReward <= 0 || isNaN(usdToInrRate) || usdToInrRate <= 0) {
+                alert('Please enter valid positive numbers for all fields.');
+                return;
+            }
+
+
+            const resultsTable = document.getElementById('resultsTable');
+            resultsTable.innerHTML = '';
+            document.getElementById('results').classList.remove('hidden');
+
+            for (let leverage = 2; leverage <= 10; leverage++) {
+                // Calculate position size
+                const positionSize = margin * leverage;
+
+                // Calculate liquidation price
+                let liquidationPrice;
+                if (tradeType === 'long') {
+                    liquidationPrice = entryPrice * (1 - 1 / leverage);
+                } else {
+                    liquidationPrice = entryPrice * (1 + 1 / leverage);
+                }
+
+                // Calculate default stop loss and take profit based on acceptable loss and risk-reward ratio
+                const quantity = margin / entryPrice;
+                const maxLoss = positionSize * (lossPercentage / 100); // Maximum loss in dollars
+                const priceChange = maxLoss / (quantity * leverage); // Corrected price change
+                const reward = maxLoss * riskReward; // Potential profit based on risk-reward ratio
+
+                let stopLoss, takeProfit;
+                if (tradeType === 'long') {
+                    stopLoss = isNaN(stopLossInput) || stopLossInput === 0 ? entryPrice - priceChange : stopLossInput;
+                    // Adjust stop loss if it's below liquidation price
+                    if (stopLoss < liquidationPrice) {
+                        stopLoss = liquidationPrice + 1000;
+                    }
+                    takeProfit = isNaN(takeProfitInput) || takeProfitInput === 0 ? entryPrice + (reward / (quantity * leverage)) : takeProfitInput;
+                } else {
+                    stopLoss = isNaN(stopLossInput) || stopLossInput === 0 ? entryPrice + priceChange : stopLossInput;
+                    // Adjust stop loss if it's above liquidation price
+                    if (stopLoss > liquidationPrice) {
+                        stopLoss = liquidationPrice + 1000;
+                    }
+                    takeProfit = isNaN(takeProfitInput) || takeProfitInput === 0 ? entryPrice - (reward / (quantity * leverage)) : takeProfitInput;
+                }
+
+                // Calculate realized profit or loss in the selected crypto
+                let realizedPLCrypto;
+                if (resultType === 'profit') {
+                    realizedPLCrypto = tradeType === 'long'
+                        ? (takeProfit - entryPrice) * quantity * leverage
+                        : (entryPrice - takeProfit) * quantity * leverage;
+                } else {
+                    realizedPLCrypto = tradeType === 'long'
+                        ? (stopLoss - entryPrice) * quantity * leverage
+                        : (entryPrice - stopLoss) * quantity * leverage;
+                }
+
+                // Calculate Realized P/L in USD based on the exit price
+                let realizedPLUsd;
+                if (crypto === 'USDT') {
+                    realizedPLUsd = realizedPLCrypto; // Use Realized P/L (USDT) directly for USDT
+                } else if (resultType === 'profit') {
+                    realizedPLUsd = realizedPLCrypto * takeProfit; // Realized P/L (BTC/ETH/SOL) * Take Profit
+                } else {
+                    realizedPLUsd = realizedPLCrypto * stopLoss; // Realized P/L (BTC/ETH/SOL) * Stop Loss
+                }
+
+                // Calculate Tax Implied and Net Profit (in INR) based on USD Realized P/L
+                let taxImplied = 0, netProfit = 0;
+                if (realizedPLUsd > 0) {
+                    taxImplied = 0.30 * realizedPLUsd * usdToInrRate; // 30% of Realized P/L in INR
+                    netProfit = 0.70 * realizedPLUsd * usdToInrRate; // 70% of Realized P/L in INR
+                } else if (realizedPLUsd < 0) {
+                    taxImplied = 0; // No tax on loss
+                    netProfit = realizedPLUsd * usdToInrRate; // Net loss in INR
+                }
+
+            // Display selected parameters
+            const selectedParamsDiv = document.getElementById('selectedParams');
+            selectedParamsDiv.innerHTML = `
+                <strong>Selected Parameters:</strong><br>
+                Crypto: ${crypto}, 
+                Entry Price: $${entryPrice.toLocaleString('en-US')}, 
+                Margin: ${margin.toLocaleString('en-US', { minimumFractionDigits: crypto === 'USDT' ? 0 : 8 })} ${crypto}, 
+                Risk-Reward Ratio: ${riskReward}, 
+                Trade Type: ${tradeType.charAt(0).toUpperCase() + tradeType.slice(1)}, 
+                Trade Outcome: ${resultType.charAt(0).toUpperCase() + resultType.slice(1)}, 
+                Acceptable Loss: ${lossPercentage}%, 
+                Take Profit: $${takeProfit.toLocaleString('en-US') || 'Not set'}, 
+                Stop Loss: $${stopLoss.toLocaleString('en-US') || 'Not set'}
+            `;
+            selectedParamsDiv.classList.remove('hidden');
+
+
+                // Create table row with formatted numbers
+                const row = document.createElement('tr');
+                row.className = 'table-row';
+                row.innerHTML = `
+                    <td class="px-6 py-4">${leverage}x</td>
+                    <td class="px-6 py-4">${crypto === 'USDT' ? '$' : ''}${formatNumber(margin, crypto)} ${crypto !== 'USDT' ? crypto : ''}</td>
+                    <td class="px-6 py-4">${crypto === 'USDT' ? '$' : ''}${formatNumber(positionSize, crypto)} ${crypto !== 'USDT' ? crypto : ''}</td>
+                    <td class="px-6 py-4">$${formatNumber(liquidationPrice, 'USDT')}</td>
+                    <td class="px-6 py-4">$${formatNumber(stopLoss, 'USDT')}</td>
+                    <td class="px-6 py-4">$${formatNumber(takeProfit, 'USDT')}</td>
+                    <td class="px-6 py-4 ${realizedPLCrypto >= 0 ? 'text-green-600' : 'text-red-600'}">
+                        ${crypto === 'USDT' ? '$' : ''}${formatNumber(realizedPLCrypto, crypto)} ${crypto !== 'USDT' ? crypto : ''}
+                    </td>
+                    ${crypto !== 'USDT' ? `<td class="px-6 py-4 ${realizedPLUsd >= 0 ? 'text-green-600' : 'text-red-600'}">
+                        $${formatNumber(realizedPLUsd, 'USDT')}
+                    </td>` : ''}
+                    <td class="px-6 py-4">₹${formatNumber(taxImplied, 'USDT')}</td>
+                    <td class="px-6 py-4 ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}">
+                        ₹${formatNumber(netProfit, 'USDT')}
+                    </td>
+                `;
+                resultsTable.appendChild(row);
+            }
+        }
+
+        // Initialize headers, margin label, and table header
+        updateHeaders();
+        updateMarginLabel();
+        updateTableHeader();
+    </script>
+</body>
+</html>
