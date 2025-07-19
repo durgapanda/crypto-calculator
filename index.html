@@ -223,7 +223,7 @@
                     <input
                       type="number"
                       id="takeProfit"
-                      step="0.01"
+                      step="1"
                       min="0"
                       class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200"
                       placeholder="Calculated or edit"
@@ -242,7 +242,7 @@
                     <input
                       type="number"
                       id="stopLoss"
-                      step="0.01"
+                      step="1"
                       min="0"
                       class="mt-1 block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 transition duration-200"
                       placeholder="Calculated or edit"
@@ -466,9 +466,9 @@
 
         // Update input fields with calculated defaults if not manually set
         if (takeProfitInput === 0)
-          document.getElementById("takeProfit").value = takeProfit.toFixed(2);
+          document.getElementById("takeProfit").value = takeProfit.toFixed(0);
         if (stopLossInput === 0)
-          document.getElementById("stopLoss").value = stopLoss.toFixed(2);
+          document.getElementById("stopLoss").value = stopLoss.toFixed(0);
 
         // Display selected parameters
         const selectedParamsDiv = document.getElementById("selectedParams");
