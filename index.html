@@ -300,9 +300,9 @@
                 // Adjust stop loss if it's beyond liquidation price
                 let adjustedStopLoss = stopLoss;
                 if (tradeType === 'long' && adjustedStopLoss < liquidationPrice) {
-                    adjustedStopLoss = liquidationPrice + 1000;
+                    adjustedStopLoss = liquidationPrice + 10;
                 } else if (tradeType === 'short' && adjustedStopLoss > liquidationPrice) {
-                    adjustedStopLoss = liquidationPrice - 1000;
+                    adjustedStopLoss = liquidationPrice + 10;
                 }
 
                 // Calculate realized profit or loss in the selected crypto
