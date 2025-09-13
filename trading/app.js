@@ -52,19 +52,6 @@ function getSummary() {
     };
   });
 }
-function calculateAverage(symbol, margin, leverage, direction) {
-  const entries = getEntries().filter(
-    (e) =>
-      e.symbol === symbol &&
-      e.margin == margin &&
-      e.leverage == leverage &&
-      e.direction === direction
-  );
-  const avgEntry =
-    entries.reduce((sum, entry) => sum + parseFloat(entry.entryPrice), 0) /
-    entries.length;
-  return avgEntry;
-}
 function getLiquidationPrice(entryPrice, leverage, direction) {
   entryPrice = parseFloat(entryPrice);
   leverage = parseFloat(leverage);
@@ -93,13 +80,11 @@ function refreshTable() {
   const entries = getEntries();
   tbody.innerHTML = "";
   entries.forEach((entry, index) => {
-    const avgEntry = calculateAverage(
-      entry.symbol,
-      entry.margin,
+    const liq = getLiquidationPrice(
+      entry.entryPrice,
       entry.leverage,
       entry.direction
-    ).toFixed(2);
-    const liq = getLiquidationPrice(avgEntry, entry.leverage, entry.direction);
+    );
     tbody.innerHTML += `
       <tr data-index="${index}">
         <td>${entry.symbol}</td>
@@ -107,7 +92,6 @@ function refreshTable() {
         <td>${entry.entryPrice}</td>
         <td>${entry.leverage}</td>
         <td>${entry.direction}</td>
-        <td>${avgEntry}</td>
         <td>${liq}</td>
         <td>
           <button class="edit-btn">Edit</button>
@@ -116,7 +100,6 @@ function refreshTable() {
       </tr>`;
   });
 
-  // Attach Event Listeners for Edit & Delete
   tbody
     .querySelectorAll("button.edit-btn")
     .forEach((btn) => (btn.onclick = onEditClick));
@@ -129,7 +112,6 @@ function onEditClick(event) {
   const idx = parseInt(tr.dataset.index);
   const entry = getEntries()[idx];
 
-  // Replace cells with editable inputs
   tr.innerHTML = `
     <td>
       <select id="editSymbol${idx}">
@@ -171,7 +153,7 @@ function onEditClick(event) {
   `;
 
   tr.querySelector("button.save-btn").onclick = () => onSaveClick(idx);
-  tr.querySelector("button.cancel-btn").onclick = () => refreshTable(); // Cancel resets table view
+  tr.querySelector("button.cancel-btn").onclick = () => refreshTable();
 }
 function onSaveClick(idx) {
   const updatedEntry = {
@@ -194,7 +176,6 @@ function onDeleteClick(event) {
     refreshTable();
   }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   const last = getLastEntry();
   if (last.margin) document.getElementById("margin").value = last.margin;
@@ -219,11 +200,10 @@ document.addEventListener("DOMContentLoaded", () => {
     saveEntry(entry);
     refreshSummary();
     refreshTable();
-    // retain form input values
-    document.getElementById("margin").value = entry.margin;
-    document.getElementById("entryPrice").value = entry.entryPrice;
-    document.getElementById("leverage").value = entry.leverage;
-    document.getElementById("symbol").value = entry.symbol;
-    document.getElementById("direction").value = entry.direction;
+    // Clear inputs except symbol
+    document.getElementById("margin").value = "";
+    document.getElementById("entryPrice").value = "";
+    document.getElementById("leverage").value = "";
+    document.getElementById("direction").value = "Long"; // reset direction
   };
 });
