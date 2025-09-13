@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Crypto Trading Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Crypto Trading Calculator</h1>
+      <form id="tradeForm">
+        <select id="symbol">
+          <option value="BTC">BTC</option>
+          <option value="ETH">ETH</option>
+          <option value="SOL">SOL</option>
+        </select>
+        <input
+          type="number"
+          step="0.01"
+          id="margin"
+          placeholder="Margin Amount"
+          required
+        />
+        <input
+          type="number"
+          step="0.01"
+          id="entryPrice"
+          placeholder="Entry Price"
+          required
+        />
+        <input
+          type="number"
+          step="1"
+          id="leverage"
+          placeholder="Leverage"
+          required
+        />
+        <select id="direction">
+          <option value="Long">Long</option>
+          <option value="Short">Short</option>
+        </select>
+        <button type="submit">Add Entry</button>
+      </form>
+
+      <div id="summarySection">
+        <h2>Symbol Summary</h2>
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Total Margin</th>
+              <th>Avg Entry</th>
+              <th>Avg Leverage</th>
+              <th>Positions</th>
+              <th>Liq. Price (Long)</th>
+              <th>Liq. Price (Short)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div id="entriesSection">
+        <h2>Trade Entries</h2>
+        <table id="entriesTable">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Margin</th>
+              <th>Entry Price</th>
+              <th>Leverage</th>
+              <th>Direction</th>
+              <th>Avg Entry</th>
+              <th>Liquidation Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
